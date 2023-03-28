@@ -1,0 +1,25 @@
+{
+  "name": "hsm-student-management-system",
+  "version": "1.0.0",
+  "description": "06_TypesScript_Student_Management_System",
+  "main": "index.js",
+  "type": "module",
+  "bin": "./index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chalk": "^2.2.0",
+    "@types/chalk-animation": "^1.6.1",
+    "@types/inquirer": "^9.0.3",
+    "@types/node": "^18.15.10"
+  },
+  "dependencies": {
+    "chalk": "^5.2.0",
+    "chalk-animation": "^2.0.3",
+    "inquirer": "^9.1.5"
+  }
+}
