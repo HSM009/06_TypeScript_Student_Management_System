@@ -18,7 +18,7 @@ const stopTime = ()=>{
     return new Promise((res:any)=>{
         setTimeout(res,3500);
     })
-}
+};
 
 const preDefinedMain = {
     showClass:  "showClass",
@@ -34,7 +34,7 @@ async function welcomeFunc(welcomeMessage:string ) {
     let rainbowTitle = chalkAnimation.neon(chalk.blueBright("Welcome To "+ welcomeMessage +" App!\n\nCoded By Hosein Sirat Mohammad\n"));
     await stopTime();
     rainbowTitle.stop();
-}
+};
 
 async function mainMenuFunc(){
 

@@ -27,6 +27,7 @@ async function welcomeFunc(welcomeMessage) {
     await stopTime();
     rainbowTitle.stop();
 }
+;
 async function mainMenuFunc() {
     await inquirer.prompt([
         {
