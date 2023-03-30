@@ -114,39 +114,38 @@ async function showClassFunc() {
     if(smClasses.length > 0)
     {
         console.log(smClasses);
+        
+        await inquirer.prompt([
+            {
+                type:   'list',
+                name:   'classOption',
+                message:'Select the class option',
+                choices:[
+                    {
+                        name:   'Show class students',
+                        value:  preDefinedClass.showClassStudent
+                    },
+                    {
+                        name:   'Return to Main option',
+                        value:  preDefinedClass.return
+                    }
+                ]
+            }
+        ]).then((selected) => {
+            if (selected.classOption == preDefinedClass.showClassStudent)
+            {
+                showClassStudentFunc();
+            }
+            else
+            {
+                mainMenuFunc();
+            }
+        });
     }
     else
     {
         console.log(chalk.redBright('No class is available'));
     }
-
-    await inquirer.prompt([
-        {
-            type:   'list',
-            name:   'classOption',
-            message:'Select the class option',
-            choices:[
-                {
-                    name:   'Show class students',
-                    value:  preDefinedClass.showClassStudent
-                },
-                {
-                    name:   'Return to Main option',
-                    value:  preDefinedClass.return
-                }
-            ]
-        }
-    ]).then((selected) => {
-        if (selected.classOption == preDefinedClass.showClassStudent)
-        {
-            showClassStudentFunc();
-        }
-        else
-        {
-            mainMenuFunc();
-        }
-    });
-
 };
 async function showClassStudentFunc() {
     await inquirer.prompt([
