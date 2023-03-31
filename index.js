@@ -8,7 +8,7 @@ import chalk from "chalk";
 import chalkAnimation from "chalk-animation";
 //------------------------------------------------------------------------------
 //CLASSES/CONSTRUCTORS/OOPs HERE
-//------------------------------------------------------------------------------
+//-----------------------------------------------,-------------------------------
 const stopTime = () => {
     return new Promise((res) => {
         setTimeout(res, 3500);
@@ -26,21 +26,22 @@ const preDefinedClass = {
 };
 const preDefinedStudentClass = {
     return: 'returnToClass',
+    showStudent: 'showSudent',
     addStudent: 'addStudent',
     removeStudent: 'removeStudent',
     modifyStudent: 'modifyStudent'
 };
 let smClasses = [
-    { name: 'Class 1', year: '2023' },
-    { name: 'Class 2', year: '2023' },
-    { name: 'Class 3', year: '2023' },
-    { name: 'Class 4', year: '2023' },
-    { name: 'Class 5', year: '2023' }
+    { uqIdClassPk: '2301', classNo: '1', yearNo: '2023' },
+    { uqIdClassPk: '2302', classNo: '2', yearNo: '2023' },
+    { uqIdClassPk: '2303', classNo: '3', yearNo: '2023' },
+    { uqIdClassPk: '2304', classNo: '4', yearNo: '2023' },
+    { uqIdClassPk: '2305', classNo: '5', yearNo: '2023' }
 ];
 let smStudents = [
-    { name: 'Uzair Abbas', year: '2023', class: 'Class 5' },
-    { name: 'Safoora Fatima', year: '2023', class: 'Class 1' },
-    { name: 'Mohammad Haider', year: '2023', class: 'Class 3' },
+    { uqIdStudentPk: '230101', name: 'Safoora Fatima', uqIdClassFk: '2301' },
+    { uqIdStudentPk: '230501', name: 'Uzair Abbas', uqIdClassFk: '2305' },
+    { uqIdStudentPk: '230301', name: 'Mohammad Haider', uqIdClassFk: '2303' },
 ];
 //------------------------------------------------------------------------------
 //FUNCTIONS HERE
@@ -95,34 +96,34 @@ async function mainMenuFunc() {
 async function showClassFunc() {
     if (smClasses.length > 0) {
         console.log(smClasses);
+        await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'classOption',
+                message: 'Select the class option',
+                choices: [
+                    {
+                        name: 'Show class options',
+                        value: preDefinedClass.showClassStudent
+                    },
+                    {
+                        name: 'Return to Main option',
+                        value: preDefinedClass.return
+                    }
+                ]
+            }
+        ]).then((selected) => {
+            if (selected.classOption == preDefinedClass.showClassStudent) {
+                showClassStudentFunc();
+            }
+            else {
+                mainMenuFunc();
+            }
+        });
     }
     else {
         console.log(chalk.redBright('No class is available'));
     }
-    await inquirer.prompt([
-        {
-            type: 'list',
-            name: 'classOption',
-            message: 'Select the class option',
-            choices: [
-                {
-                    name: 'Show class students',
-                    value: preDefinedClass.showClassStudent
-                },
-                {
-                    name: 'Return to main option',
-                    value: preDefinedClass.return
-                }
-            ]
-        }
-    ]).then((selected) => {
-        if (selected.classOption == preDefinedClass.showClassStudent) {
-            showClassStudentFunc();
-        }
-        else {
-            mainMenuFunc();
-        }
-    });
 }
 ;
 async function showClassStudentFunc() {
@@ -133,6 +134,9 @@ async function showClassStudentFunc() {
             message: 'Select the student class option',
             choices: [
                 {
+                    name: 'Show the student in spcific class',
+                    value: preDefinedStudentClass.showStudent
+                }, {
                     name: 'Add the student',
                     value: preDefinedStudentClass.addStudent
                 },
@@ -168,8 +172,58 @@ async function showClassStudentFunc() {
 ;
 async function addStudentFunc() {
     console.log(preDefinedStudentClass.addStudent);
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'studentName',
+            message: 'Enter the student name'
+        },
+        {
+            type: 'list',
+            name: 'studentClass',
+            message: 'Select the class',
+            choices: smClasses.map((chose) => chose.classNo)
+        },
+        {
+            type: 'list',
+            name: 'studentYear',
+            message: 'Select the year',
+            choices: [...new Set(smClasses.map((chose) => chose.yearNo))]
+        },
+        {
+            type: 'confirm',
+            name: 'confirm',
+            message: 'Are you sure that you want to add student data?',
+            default: false
+        }
+    ]).then((selected) => {
+        if (selected.confirm == true) {
+            let newStudentID = newStudentIDFunc(selected.studentClass, selected.studentYear);
+            smClasses.push();
+        }
+        else {
+            console.log(chalk.redBright('You have cancelled the confirmation.'));
+        }
+    });
 }
 ;
+function newStudentIDFunc(sClass, sYear) {
+    let newId;
+    if (sClass.length == 1) {
+        sClass = '0' + sClass;
+    }
+    let makeId = sYear.slice(-2) + sClass;
+    let PKstudentData = smStudents.filter((lsData) => lsData.uqIdClassFk == makeId).map((lsData) => lsData.uqIdStudentPk);
+    if (PKstudentData.length == 0) {
+        newId = makeId + '00';
+    }
+    else {
+        newId = PKstudentData.slice(-1);
+    }
+    console.log(PKstudentData);
+    console.log(parseInt(newId) + 1);
+    return parseInt(newId) + 1;
+}
 async function removeStudentFunc() {
     console.log(preDefinedStudentClass.removeStudent);
 }
@@ -190,5 +244,5 @@ async function removeClassFunc() {
 //MAIN HERE
 //------------------------------------------------------------------------------
 //let appName:string = "Student Management System";
-//await welcomeFunc(appName);
+//await welcomeFunc(appName);y
 await mainMenuFunc();
