@@ -9,6 +9,7 @@ console.clear();
 import inquirer from "inquirer";
 import chalk from "chalk";
 import chalkAnimation from "chalk-animation";
+import Choices from "inquirer/lib/objects/choices.js";
 
 //------------------------------------------------------------------------------
 //CLASSES/CONSTRUCTORS/OOPs HERE
@@ -47,7 +48,7 @@ let smClasses = [
     {uqIdClassPk:  '2305',    classNo:  '5', yearNo: '2023'}
 ];
 
-let smStudents = [
+const smStudents = [
     {uqIdStudentPk:'230101',   name:   'Safoora Fatima',  uqIdClassFk:'2301'},
     {uqIdStudentPk:'230501',   name:   'Uzair Abbas',     uqIdClassFk:'2305'},
     {uqIdStudentPk:'230301',   name:   'Mohammad Haider', uqIdClassFk:'2303'},
@@ -177,7 +178,11 @@ async function showClassStudentFunc() {
             ]
         }
     ]).then((selected) => {
-        if(selected.classStudentOption == preDefinedStudentClass.addStudent)
+        if(selected.classStudentOption == preDefinedStudentClass.showStudent)
+        {
+            addShowStudentFunc();
+        }
+        else if(selected.classStudentOption == preDefinedStudentClass.addStudent)
         {
             addStudentFunc();
         }
@@ -194,6 +199,33 @@ async function showClassStudentFunc() {
             showClassFunc();
         }
         
+    });
+};
+
+async function addShowStudentFunc(){
+    inquirer.prompt([
+        {
+            type:   'list',
+            name:   'classNo',
+            message:'Select the class ',
+            choices: smClasses.map((chose) => chose.classNo)
+        },
+        {
+            type:   'list',
+            name:   'classYear',
+            message:'Select the year',
+            choices: [...new Set(smClasses.map((chose) => chose.yearNo))]
+        }
+    ]).then ((selected) => {
+        let classId:any;
+        if(selected.classNo.length==1)
+        { 
+            classId = '0'+ selected.classNo;
+        }
+        classId = selected.classYear.substring(2,4) +classId;
+        let message:any = smStudents.filter((dataValue) => dataValue.uqIdClassFk == classId);
+        console.log(message);
+        showClassStudentFunc();
     });
 };
 
@@ -220,18 +252,22 @@ async function addStudentFunc() {
         {
             type:   'confirm',
             name:   'confirm',
-            message:'Are you sure that you want to add student data?',
-            default: false
+            message:'Are you sure that you want to add student data?'
         }
     ]).then ((selected) =>{
         if (selected.confirm == true)
         {
-            let newStudentID = newStudentIDFunc(selected.studentClass,selected.studentYear);
-            smClasses.push();
+            let newStudentID:any = newStudentIDFunc(selected.studentClass,selected.studentYear);
+            const newObj = { uqIdStudentPk: newStudentID.toString(),   name:   selected.studentName, uqIdClassFk: newStudentID.toString().substring(0,4)};
+            smStudents.push(newObj);
+            console.log(newObj);
+            console.log(chalk.bgGreenBright('New student is added succesffully.\n'));
+            
+            showClassStudentFunc();
         }
         else
         {
-            console.log(chalk.redBright('You have cancelled the confirmation.'));
+            console.log(chalk.bgRedBright('You have cancelled the confirmation.\n'));
         }
     });
 };
