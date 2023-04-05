@@ -38,7 +38,7 @@ let smClasses = [
     { uqIdClassPk: '2304', classNo: '4', yearNo: '2023' },
     { uqIdClassPk: '2305', classNo: '5', yearNo: '2023' }
 ];
-const smStudents = [
+let smStudents = [
     { uqIdStudentPk: '230101', name: 'Safoora Fatima', uqIdClassFk: '2301' },
     { uqIdStudentPk: '230501', name: 'Uzair Abbas', uqIdClassFk: '2305' },
     { uqIdStudentPk: '230301', name: 'Mohammad Haider', uqIdClassFk: '2303' },
@@ -83,9 +83,11 @@ async function mainMenuFunc() {
         }
         else if (selected.option == preDefinedMain.addClass) {
             addClassFunc();
+            //mainMenuFunc();
         }
         else if (selected.option == preDefinedMain.removeClass) {
             removeClassFunc();
+            mainMenuFunc();
         }
         else {
             console.log(preDefinedMain.Bye);
@@ -156,16 +158,20 @@ async function showClassStudentFunc() {
         }
     ]).then((selected) => {
         if (selected.classStudentOption == preDefinedStudentClass.showStudent) {
-            addShowStudentFunc();
+            showStudentFunc();
+            showClassStudentFunc();
         }
         else if (selected.classStudentOption == preDefinedStudentClass.addStudent) {
             addStudentFunc();
+            showClassStudentFunc();
         }
         else if (selected.classStudentOption == preDefinedStudentClass.removeStudent) {
             removeStudentFunc();
+            showClassStudentFunc();
         }
         else if (selected.classStudentOption == preDefinedStudentClass.modifyStudent) {
             modifyStudentFunc();
+            showClassStudentFunc();
         }
         else {
             showClassFunc();
@@ -173,7 +179,7 @@ async function showClassStudentFunc() {
     });
 }
 ;
-async function addShowStudentFunc() {
+async function showStudentFunc() {
     inquirer.prompt([
         {
             type: 'list',
@@ -193,9 +199,8 @@ async function addShowStudentFunc() {
             classId = '0' + selected.classNo;
         }
         classId = selected.classYear.substring(2, 4) + classId;
-        let message = smStudents.filter((dataValue) => dataValue.uqIdClassFk == classId);
+        const message = smStudents.filter((dataValue) => dataValue.uqIdClassFk == classId);
         console.log(message);
-        showClassStudentFunc();
     });
 }
 ;
@@ -226,20 +231,19 @@ async function addStudentFunc() {
         }
     ]).then((selected) => {
         if (selected.confirm == true) {
-            let newStudentID = newStudentIDFunc(selected.studentClass, selected.studentYear);
-            const newObj = { uqIdStudentPk: newStudentID.toString(), name: selected.studentName, uqIdClassFk: newStudentID.toString().substring(0, 4) };
+            let newClassId = newClassIdFunc(selected.studentClass, selected.studentYear);
+            const newObj = { uqIdStudentPk: newClassId.toString(), name: selected.studentName, uqIdClassFk: newClassId.toString().substring(0, 4) };
             smStudents.push(newObj);
             console.log(newObj);
-            console.log(chalk.greenBright('New student is added succesffully.'));
-            showClassStudentFunc();
+            console.log(chalk.bgGreenBright('New student is added succesffully.\n'));
         }
         else {
-            console.log(chalk.redBright('You have cancelled the confirmation.'));
+            console.log(chalk.bgRedBright('You have cancelled the confirmation.\n'));
         }
     });
 }
 ;
-function newStudentIDFunc(sClass, sYear) {
+function newClassIdFunc(sClass, sYear) {
     let newId;
     if (sClass.length == 1) {
         sClass = '0' + sClass;
@@ -263,7 +267,61 @@ async function modifyStudentFunc() {
 }
 ;
 async function addClassFunc() {
-    console.log(preDefinedMain.addClass);
+    await inquirer.prompt([
+        {
+            type: 'input',
+            name: 'classYear',
+            message: 'Enter the class year',
+            validate(value) {
+                if (!isNaN(value)) {
+                    if (value.length != 4) {
+                        return chalk.bgRedBright('Enter year format yyyy.');
+                    }
+                    else {
+                        return true;
+                    }
+                }
+                else {
+                    return chalk.bgRedBright('Must enter number input.');
+                }
+            }
+        },
+        {
+            type: 'input',
+            name: 'classNo',
+            message: 'Enter the class number ',
+            validate(value) {
+                if (!isNaN(value)) {
+                    if (value.length == 0) {
+                        return chalk.bgRedBright('Must enter atleast 1 digit.');
+                    }
+                    else {
+                        return true;
+                    }
+                }
+                else {
+                    return chalk.bgRedBright('Must enter number input.');
+                }
+            }
+        }
+    ]).then((selected) => {
+        let newClassNo = smClasses.find((val) => val.classNo == selected.classNo && val.yearNo == selected.classYear);
+        console.log(newClassNo);
+        if (newClassNo == undefined) {
+            let newClassId;
+            if (selected.classNo.length == 1) {
+                newClassId = '0' + newClassId;
+            }
+            newClassId = selected.classYear.slice(-2) + newClassId;
+            const newObj = { uqIdClassPk: newClassId.toString().substring(0, 4), classNo: selected.classNo, yearNo: newClassId };
+            console.log(newObj);
+            smClasses.push(newObj);
+            return chalk.bgRedBright('Class added.');
+        }
+        else {
+            return chalk.bgRedBright('Class already exist.');
+        }
+    });
 }
 ;
 async function removeClassFunc() {
