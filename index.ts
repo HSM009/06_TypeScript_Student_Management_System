@@ -100,7 +100,6 @@ async function mainMenuFunc(){
         else if(selected.option == preDefinedMain.addClass)
         {
             addClassFunc();
-            //mainMenuFunc();
         }
         else if(selected.option == preDefinedMain.removeClass)
         {
@@ -353,25 +352,29 @@ async function addClassFunc() {
     ]).then((selected) =>
     {
         let newClassNo =  smClasses.find((val)=> val.classNo == selected.classNo && val.yearNo == selected.classYear);
-        console.log(newClassNo);
+
         if (newClassNo == undefined)
         {
             let newClassId;
             if(selected.classNo.length==1)
             { 
-                newClassId = '0'+newClassId;
+                newClassId = '0'+selected.classNo;
             }
             newClassId = selected.classYear.slice(-2) + newClassId ;
-            const newObj = { uqIdClassPk: newClassId.toString().substring(0,4),    classNo:  selected.classNo,    yearNo: newClassId };
+            const newObj = { uqIdClassPk: newClassId.toString().substring(0,4),    classNo:  selected.classNo,    yearNo: selected.classYear };
             console.log(newObj);
             smClasses.push(newObj);
-            return chalk.bgRedBright('Class added.');
+            console.log(chalk.bgGreenBright('\nClass added.\n'));;
+            mainMenuFunc();
         }
         else
         {
-            return chalk.bgRedBright('Class already exist.');
+            console.log(chalk.bgRedBright('\nClass already added.\n'));
+            mainMenuFunc();
         }
+        
     });
+    
 };
 async function removeClassFunc() {
     console.log(preDefinedMain.removeClass);
