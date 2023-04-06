@@ -14,18 +14,19 @@ const stopTime = () => {
         setTimeout(res, 3500);
     });
 };
-const preDefinedMain = {
-    showClass: "showClass",
-    addClass: "addClass",
-    removeClass: 'removeClass',
+const preDefinedMainMenu = {
+    showClassMenu: "showClassMenu",
+    showStudentMenu: "showStudentMenu",
     Bye: "bye"
 };
-const preDefinedClass = {
-    return: 'returnToMain',
-    showClassStudent: 'showClassStudent',
+const preDefinedClassMenu = {
+    showAllClass: 'showAllClass',
+    addClass: 'addClass',
+    removeClass: 'removeClass',
+    returnToMain: 'returnToMain',
 };
-const preDefinedStudentClass = {
-    return: 'returnToClass',
+const preDefinedStudentMenu = {
+    returnToMain: 'returnToMain',
     showStudent: 'showSudent',
     addStudent: 'addStudent',
     removeStudent: 'removeStudent',
@@ -52,128 +53,234 @@ async function welcomeFunc(welcomeMessage) {
     rainbowTitle.stop();
 }
 ;
+////******MAIN MENU FUNC ************/
 async function mainMenuFunc() {
     await inquirer.prompt([
         {
             type: 'list',
             name: 'option',
-            message: 'Select the main option',
+            message: 'Select the main menu option',
             choices: [
                 {
-                    name: "Show all classes",
-                    value: preDefinedMain.showClass
+                    name: "Show class menu",
+                    value: preDefinedMainMenu.showClassMenu
                 },
                 {
-                    name: "Add a class",
-                    value: preDefinedMain.addClass
-                },
-                {
-                    name: "Remove a class",
-                    value: preDefinedMain.removeClass
+                    name: "Show student menu",
+                    value: preDefinedMainMenu.showStudentMenu
                 },
                 {
                     name: "Bye",
-                    value: preDefinedMain.Bye
+                    value: preDefinedMainMenu.Bye
                 }
             ]
         }
     ]).then((selected) => {
-        if (selected.option == preDefinedMain.showClass) {
-            showClassFunc();
+        if (selected.option == preDefinedMainMenu.showClassMenu) {
+            showClassMenuFunc();
         }
-        else if (selected.option == preDefinedMain.addClass) {
-            addClassFunc();
-        }
-        else if (selected.option == preDefinedMain.removeClass) {
-            removeClassFunc();
-            mainMenuFunc();
+        else if (selected.option == preDefinedMainMenu.showStudentMenu) {
+            showStudentMenuFunc();
         }
         else {
-            console.log(preDefinedMain.Bye);
+            console.log(preDefinedMainMenu.Bye);
         }
     });
 }
 ;
-async function showClassFunc() {
-    if (smClasses.length > 0) {
-        console.log(smClasses);
-        await inquirer.prompt([
-            {
-                type: 'list',
-                name: 'classOption',
-                message: 'Select the class option',
-                choices: [
-                    {
-                        name: 'Show class options',
-                        value: preDefinedClass.showClassStudent
-                    },
-                    {
-                        name: 'Return to Main option',
-                        value: preDefinedClass.return
-                    }
-                ]
-            }
-        ]).then((selected) => {
-            if (selected.classOption == preDefinedClass.showClassStudent) {
-                showClassStudentFunc();
-            }
-            else {
-                mainMenuFunc();
-            }
-        });
-    }
-    else {
-        console.log(chalk.redBright('No class is available'));
-    }
-}
-;
-async function showClassStudentFunc() {
+////******CLASS MENU FUNC ************/
+async function showClassMenuFunc() {
     await inquirer.prompt([
         {
             type: 'list',
-            name: 'classStudentOption',
-            message: 'Select the student class option',
+            name: 'classOption',
+            message: 'Select the class menu option',
             choices: [
                 {
-                    name: 'Show the student in spcific class',
-                    value: preDefinedStudentClass.showStudent
-                }, {
-                    name: 'Add the student',
-                    value: preDefinedStudentClass.addStudent
+                    name: 'Show all classes',
+                    value: preDefinedClassMenu.showAllClass
                 },
                 {
-                    name: 'Remove the student',
-                    value: preDefinedStudentClass.removeStudent
+                    name: 'Add a class',
+                    value: preDefinedClassMenu.addClass
                 },
                 {
-                    name: 'Modify the student',
-                    value: preDefinedStudentClass.modifyStudent
+                    name: 'Remove a class',
+                    value: preDefinedClassMenu.removeClass
                 },
                 {
-                    name: 'Return to Class option',
-                    value: preDefinedStudentClass.return
+                    name: 'Return to main menu',
+                    value: preDefinedClassMenu.returnToMain
                 }
             ]
         }
     ]).then((selected) => {
-        if (selected.classStudentOption == preDefinedStudentClass.showStudent) {
-            showStudentFunc();
-            showClassStudentFunc();
+        if (selected.classOption == preDefinedClassMenu.showAllClass) {
+            showAllClassFunc();
         }
-        else if (selected.classStudentOption == preDefinedStudentClass.addStudent) {
-            addStudentFunc();
-            showClassStudentFunc();
+        else if (selected.classOption == preDefinedClassMenu.addClass) {
+            addClassFunc();
         }
-        else if (selected.classStudentOption == preDefinedStudentClass.removeStudent) {
-            removeStudentFunc();
-            showClassStudentFunc();
-        }
-        else if (selected.classStudentOption == preDefinedStudentClass.modifyStudent) {
-            modifyStudentFunc();
-            showClassStudentFunc();
+        else if (selected.classOption == preDefinedClassMenu.removeClass) {
+            removeClassFunc();
         }
         else {
-            showClassFunc();
+            mainMenuFunc();
+        }
+    });
+}
+;
+async function showAllClassFunc() {
+    if (smClasses.length > 0) {
+        console.log(smClasses);
+    }
+    else {
+        console.log(chalk.redBright('No class is available'));
+    }
+    await showClassMenuFunc();
+}
+;
+async function addClassFunc() {
+    await inquirer.prompt([
+        {
+            type: 'input',
+            name: 'classYear',
+            message: 'Enter the class year',
+            validate(value) {
+                if (!isNaN(value)) {
+                    if (value.length != 4) {
+                        return chalk.bgRedBright('Enter year format yyyy.');
+                    }
+                    else {
+                        return true;
+                    }
+                }
+                else {
+                    return chalk.bgRedBright('Must enter number input.');
+                }
+            }
+        },
+        {
+            type: 'input',
+            name: 'classNo',
+            message: 'Enter the class number ',
+            validate(value) {
+                if (!isNaN(value)) {
+                    if (value.length == 0) {
+                        return chalk.bgRedBright('Must enter atleast 1 digit.');
+                    }
+                    else {
+                        return true;
+                    }
+                }
+                else {
+                    return chalk.bgRedBright('Must enter number input.');
+                }
+            }
+        }
+    ]).then((selected) => {
+        let newClassNo = smClasses.find((val) => val.classNo == selected.classNo && val.yearNo == selected.classYear);
+        if (newClassNo == undefined) {
+            let newClassId;
+            if (selected.classNo.length == 1) {
+                newClassId = '0' + selected.classNo;
+            }
+            newClassId = selected.classYear.slice(-2) + newClassId;
+            const newObj = { uqIdClassPk: newClassId.toString().substring(0, 4), classNo: selected.classNo, yearNo: selected.classYear };
+            console.log(newObj);
+            smClasses.push(newObj);
+            console.log(chalk.bgGreenBright('\nClass added.\n'));
+        }
+        else {
+            console.log(chalk.bgRedBright('\nYou can not add already added class.\n'));
+        }
+    });
+    await showClassMenuFunc();
+}
+;
+async function removeClassFunc() {
+    await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'classYear',
+            message: 'Select the class year',
+            choices: [...new Set(smClasses.map((choice) => choice.yearNo))]
+        },
+        {
+            type: 'list',
+            name: 'classNo',
+            message: (getAns) => { return 'Select the class number of year ' + getAns.classYear; },
+            choices: (getAns) => {
+                return smClasses.filter((choice) => choice.yearNo == getAns.classYear).map((choice) => choice.classNo);
+            }
+        },
+        {
+            type: 'confirm',
+            name: 'confirm',
+            message: 'Are you sure that you want to remove class?'
+        }
+    ]).then((selected) => {
+        if (selected.confirm == true) {
+            let removeClassNo = smClasses.findIndex((val) => val.classNo == selected.classNo && val.yearNo == selected.classYear);
+            smClasses.splice(removeClassNo, 1);
+            console.log(chalk.bgGreenBright('\nClass is removed.\n'));
+        }
+        else {
+            console.log(chalk.bgRedBright('\nYou have cancelled the confirmation.\n'));
+        }
+    });
+    await showClassMenuFunc();
+}
+;
+////******STUDENT MENU FUNC ************/
+async function showStudentMenuFunc() {
+    await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'studentOption',
+            message: 'Select the student menu option',
+            choices: [
+                {
+                    name: 'Show the students in a class',
+                    value: preDefinedStudentMenu.showStudent
+                }, {
+                    name: 'Add the student',
+                    value: preDefinedStudentMenu.addStudent
+                },
+                {
+                    name: 'Remove the student',
+                    value: preDefinedStudentMenu.removeStudent
+                },
+                {
+                    name: 'Modify the student',
+                    value: preDefinedStudentMenu.modifyStudent
+                },
+                {
+                    name: 'Return to Class option',
+                    value: preDefinedStudentMenu.returnToMain
+                }
+            ]
+        }
+    ]).then((selected) => {
+        if (selected.classStudentOption == preDefinedStudentMenu.showStudent) {
+            showStudentFunc();
+            showStudentMenuFunc();
+        }
+        else if (selected.classStudentOption == preDefinedStudentMenu.addStudent) {
+            addStudentFunc();
+            showStudentMenuFunc();
+            ;
+        }
+        else if (selected.classStudentOption == preDefinedStudentMenu.removeStudent) {
+            removeStudentFunc();
+            showStudentMenuFunc();
+        }
+        else if (selected.classStudentOption == preDefinedStudentMenu.modifyStudent) {
+            modifyStudentFunc();
+            showStudentMenuFunc();
+        }
+        else {
+            mainMenuFunc();
         }
     });
 }
@@ -204,7 +311,6 @@ async function showStudentFunc() {
 }
 ;
 async function addStudentFunc() {
-    console.log(preDefinedStudentClass.addStudent);
     inquirer.prompt([
         {
             type: 'input',
@@ -258,75 +364,9 @@ function newClassIdFunc(sClass, sYear) {
     return parseInt(newId) + 1;
 }
 async function removeStudentFunc() {
-    console.log(preDefinedStudentClass.removeStudent);
 }
 ;
 async function modifyStudentFunc() {
-    console.log(preDefinedStudentClass.modifyStudent);
-}
-;
-async function addClassFunc() {
-    await inquirer.prompt([
-        {
-            type: 'input',
-            name: 'classYear',
-            message: 'Enter the class year',
-            validate(value) {
-                if (!isNaN(value)) {
-                    if (value.length != 4) {
-                        return chalk.bgRedBright('Enter year format yyyy.');
-                    }
-                    else {
-                        return true;
-                    }
-                }
-                else {
-                    return chalk.bgRedBright('Must enter number input.');
-                }
-            }
-        },
-        {
-            type: 'input',
-            name: 'classNo',
-            message: 'Enter the class number ',
-            validate(value) {
-                if (!isNaN(value)) {
-                    if (value.length == 0) {
-                        return chalk.bgRedBright('Must enter atleast 1 digit.');
-                    }
-                    else {
-                        return true;
-                    }
-                }
-                else {
-                    return chalk.bgRedBright('Must enter number input.');
-                }
-            }
-        }
-    ]).then((selected) => {
-        let newClassNo = smClasses.find((val) => val.classNo == selected.classNo && val.yearNo == selected.classYear);
-        if (newClassNo == undefined) {
-            let newClassId;
-            if (selected.classNo.length == 1) {
-                newClassId = '0' + selected.classNo;
-            }
-            newClassId = selected.classYear.slice(-2) + newClassId;
-            const newObj = { uqIdClassPk: newClassId.toString().substring(0, 4), classNo: selected.classNo, yearNo: selected.classYear };
-            console.log(newObj);
-            smClasses.push(newObj);
-            console.log(chalk.bgGreenBright('\nClass added.\n'));
-            ;
-            mainMenuFunc();
-        }
-        else {
-            console.log(chalk.bgRedBright('\nClass already added.\n'));
-            mainMenuFunc();
-        }
-    });
-}
-;
-async function removeClassFunc() {
-    console.log(preDefinedMain.removeClass);
 }
 ;
 //------------------------------------------------------------------------------
