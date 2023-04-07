@@ -27,7 +27,7 @@ const preDefinedClassMenu = {
 };
 const preDefinedStudentMenu = {
     returnToMain: 'returnToMain',
-    showStudent: 'showSudent',
+    showStudent: 'showStudent',
     addStudent: 'addStudent',
     removeStudent: 'removeStudent',
     modifyStudent: 'modifyStudent'
@@ -209,7 +209,7 @@ async function removeClassFunc() {
         {
             type: 'list',
             name: 'classNo',
-            message: (getAns) => { return 'Select the class number of year ' + getAns.classYear; },
+            message: 'Select the class number',
             choices: (getAns) => {
                 return smClasses.filter((choice) => choice.yearNo == getAns.classYear).map((choice) => choice.classNo);
             }
@@ -243,7 +243,8 @@ async function showStudentMenuFunc() {
                 {
                     name: 'Show the students in a class',
                     value: preDefinedStudentMenu.showStudent
-                }, {
+                },
+                {
                     name: 'Add the student',
                     value: preDefinedStudentMenu.addStudent
                 },
@@ -256,26 +257,23 @@ async function showStudentMenuFunc() {
                     value: preDefinedStudentMenu.modifyStudent
                 },
                 {
-                    name: 'Return to Class option',
+                    name: 'Return to main menu',
                     value: preDefinedStudentMenu.returnToMain
                 }
             ]
         }
     ]).then((selected) => {
-        if (selected.classStudentOption == preDefinedStudentMenu.showStudent) {
+        if (selected.studentOption == preDefinedStudentMenu.showStudent) {
             showStudentFunc();
-            showStudentMenuFunc();
         }
-        else if (selected.classStudentOption == preDefinedStudentMenu.addStudent) {
+        else if (selected.studentOption == preDefinedStudentMenu.addStudent) {
             addStudentFunc();
-            showStudentMenuFunc();
-            ;
         }
-        else if (selected.classStudentOption == preDefinedStudentMenu.removeStudent) {
+        else if (selected.studentOption == preDefinedStudentMenu.removeStudent) {
             removeStudentFunc();
             showStudentMenuFunc();
         }
-        else if (selected.classStudentOption == preDefinedStudentMenu.modifyStudent) {
+        else if (selected.studentOption == preDefinedStudentMenu.modifyStudent) {
             modifyStudentFunc();
             showStudentMenuFunc();
         }
@@ -289,15 +287,17 @@ async function showStudentFunc() {
     inquirer.prompt([
         {
             type: 'list',
-            name: 'classNo',
-            message: 'Select the class ',
-            choices: smClasses.map((chose) => chose.classNo)
-        },
-        {
-            type: 'list',
             name: 'classYear',
             message: 'Select the year',
             choices: [...new Set(smClasses.map((chose) => chose.yearNo))]
+        },
+        {
+            type: 'list',
+            name: 'classNo',
+            message: 'Select the class',
+            choices: (getAns) => {
+                return smClasses.filter((choice) => choice.yearNo == getAns.classYear).map((choice) => choice.classNo);
+            }
         }
     ]).then((selected) => {
         let classId;
@@ -308,6 +308,7 @@ async function showStudentFunc() {
         const message = smStudents.filter((dataValue) => dataValue.uqIdClassFk == classId);
         console.log(message);
     });
+    showStudentMenuFunc();
 }
 ;
 async function addStudentFunc() {
