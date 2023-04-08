@@ -53,6 +53,25 @@ async function welcomeFunc(welcomeMessage) {
     rainbowTitle.stop();
 }
 ;
+function makeClassId(mClass, mYear) {
+    if (mClass.length == 1) {
+        mClass = '0' + mClass;
+    }
+    return mYear.slice(-2) + mClass;
+}
+;
+function newClassIdFunc(sClass, sYear) {
+    let makeId = makeClassId(sClass, sYear);
+    let PKstudentData = smStudents.filter((lsData) => lsData.uqIdClassFk == makeId).map((lsData) => lsData.uqIdStudentPk);
+    let newId;
+    if (PKstudentData.length == 0) {
+        newId = makeId + '00';
+    }
+    else {
+        newId = PKstudentData.slice(-1);
+    }
+    return parseInt(newId) + 1;
+}
 ////******MAIN MENU FUNC ************/
 async function mainMenuFunc() {
     await inquirer.prompt([
@@ -181,11 +200,7 @@ async function addClassFunc() {
     ]).then((selected) => {
         let newClassNo = smClasses.find((val) => val.classNo == selected.classNo && val.yearNo == selected.classYear);
         if (newClassNo == undefined) {
-            let newClassId;
-            if (selected.classNo.length == 1) {
-                newClassId = '0' + selected.classNo;
-            }
-            newClassId = selected.classYear.slice(-2) + newClassId;
+            let newClassId = makeClassId(selected.classYear, selected.classNo);
             const newObj = { uqIdClassPk: newClassId.toString().substring(0, 4), classNo: selected.classNo, yearNo: selected.classYear };
             console.log(newObj);
             smClasses.push(newObj);
@@ -271,11 +286,9 @@ async function showStudentMenuFunc() {
         }
         else if (selected.studentOption == preDefinedStudentMenu.removeStudent) {
             removeStudentFunc();
-            showStudentMenuFunc();
         }
         else if (selected.studentOption == preDefinedStudentMenu.modifyStudent) {
             modifyStudentFunc();
-            showStudentMenuFunc();
         }
         else {
             mainMenuFunc();
@@ -284,7 +297,7 @@ async function showStudentMenuFunc() {
 }
 ;
 async function showStudentFunc() {
-    inquirer.prompt([
+    await inquirer.prompt([
         {
             type: 'list',
             name: 'classYear',
@@ -306,7 +319,12 @@ async function showStudentFunc() {
         }
         classId = selected.classYear.substring(2, 4) + classId;
         const message = smStudents.filter((dataValue) => dataValue.uqIdClassFk == classId);
-        console.log(message);
+        if (message.length > 0) {
+            console.log(message);
+        }
+        else {
+            console.log(chalk.bgRedBright('\nNo student/s found.\n'));
+        }
     });
     showStudentMenuFunc();
 }
@@ -347,24 +365,50 @@ async function addStudentFunc() {
             console.log(chalk.bgRedBright('You have cancelled the confirmation.\n'));
         }
     });
+    showStudentMenuFunc();
 }
 ;
-function newClassIdFunc(sClass, sYear) {
-    let newId;
-    if (sClass.length == 1) {
-        sClass = '0' + sClass;
-    }
-    let makeId = sYear.slice(-2) + sClass;
-    let PKstudentData = smStudents.filter((lsData) => lsData.uqIdClassFk == makeId).map((lsData) => lsData.uqIdStudentPk);
-    if (PKstudentData.length == 0) {
-        newId = makeId + '00';
-    }
-    else {
-        newId = PKstudentData.slice(-1);
-    }
-    return parseInt(newId) + 1;
-}
 async function removeStudentFunc() {
+    await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'classYear',
+            message: 'Select the class year',
+            choices: [...new Set(smClasses.map((choice) => choice.yearNo))]
+        },
+        {
+            type: 'list',
+            name: 'classNo',
+            message: 'Select the class number',
+            choices: (getAns) => {
+                return smClasses.filter((choice) => choice.yearNo == getAns.classYear).map((choice) => choice.classNo);
+            }
+        },
+        {
+            type: 'list',
+            name: 'studentList',
+            message: (getAns) => 'Select the student' + makeClassId(getAns.classNo, getAns.classYear),
+            choices: (getAns) => {
+                let classID = makeClassId(getAns.classNo, getAns.classYear);
+                return smStudents.filter((choice) => choice.uqIdClassFk == classID).map((choice) => choice.name);
+            }
+        },
+        {
+            type: 'confirm',
+            name: 'confirm',
+            message: 'Are you sure that you want to remove student?'
+        }
+    ]).then((selected) => {
+        if (selected.confirm == true) {
+            let removeClassNo = smClasses.findIndex((val) => val.classNo == selected.classNo && val.yearNo == selected.classYear);
+            smClasses.splice(removeClassNo, 1);
+            console.log(chalk.bgGreenBright('\nClass is removed.\n'));
+        }
+        else {
+            console.log(chalk.bgRedBright('\nYou have cancelled the confirmation.\n'));
+        }
+    });
+    await showStudentMenuFunc();
 }
 ;
 async function modifyStudentFunc() {
