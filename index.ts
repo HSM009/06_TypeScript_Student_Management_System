@@ -391,7 +391,7 @@ async function showStudentFunc(){
 
 async function addStudentFunc() {
 
-    inquirer.prompt([
+    await inquirer.prompt([
         {
             type:   'input',
             name:   'studentName',
@@ -399,15 +399,17 @@ async function addStudentFunc() {
         },
         {
             type:   'list',
-            name:   'studentClass',
-            message:'Select the class',
-            choices: smClasses.map((chose) => chose.classNo)
-        },
-        {
-            type:   'list',
             name:   'studentYear',
             message:'Select the year',
             choices: [...new Set(smClasses.map((chose) => chose.yearNo))]
+        },
+        {
+            type:   'list',
+            name:   'studentClass',
+            message:'Select the class',
+            choices: (getAns) => { 
+                return  smClasses.filter((choice) => choice.yearNo == getAns.studentYear ).map((choice) => choice.classNo); 
+            }
         },
         {
             type:   'confirm',
@@ -487,20 +489,66 @@ async function removeStudentFunc() {
 };
 
 async function modifyStudentFunc() {
-    inquirer.prompt([
+    await inquirer.prompt([
         {
-            type:   'list',
-            name:   'classYear',
-            
+            type:   'input',
+            name:   'studentRollNo',
+            message:'Enter the student roll number',
+            validate(value){
+               const student = smStudents.find((val)=> val.uqIdStudentPk == value);
+               if(student || value == ('back') )
+               {
+                return true;
+               }
+               else 
+               {
+                return (chalk.bgRedBright('Student roll number not exist or Type **back** to return to previous menu.'));
+               }
+            }
+        },
+        {
+            type:   'confirm',
+            name:   'studentConfirm',
+            message(value) {
+                const student = smStudents.filter((val)=> val.uqIdStudentPk == value.studentRollNo).map((val)=> val.name);
+                return ('Do you want to modify this student. ' + chalk.bgBlackBright(student)) ;
+            },
+            when(oa) {
+               return oa.studentRollNo != 'back';
+            }  
+        },
+        {
+            type:   'input',
+            name:   'studentNewName',
+            message:'Enter the student new name',
+            validate(value) {
+                if(value.length <1)
+                {
+                    return chalk.bgRedBright('Must enter some character/s');
+                }
+                else
+                {
+                    return true;
+                }
+            }
         }
-    ])
+    ]).then((selected)=>{
+        if(selected.studentConfirm == true)
+        {
+            const  smsIndex = smStudents.findIndex((val) => val.uqIdStudentPk == selected.studentRollNo);
+            smStudents[smsIndex].name = selected.studentNewName;
+            console.log(smStudents[smsIndex]);
+            console.log(chalk.bgGreenBright('\nNew student is modified succesffully.\n'));     
+        }
+    });
+    await showStudentMenuFunc();
 };
 
 //------------------------------------------------------------------------------
 //MAIN HERE
 //------------------------------------------------------------------------------
 
-//let appName:string = "Student Management System";
-//await welcomeFunc(appName);y
+let appName:string = "Student Management System";
+await welcomeFunc(appName);
 
 await mainMenuFunc();

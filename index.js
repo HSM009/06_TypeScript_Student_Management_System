@@ -34,9 +34,9 @@ const preDefinedStudentMenu = {
 };
 let smClasses = [
     { uqIdClassPk: '2301', classNo: '1', yearNo: '2023' },
-    { uqIdClassPk: '2302', classNo: '2', yearNo: '2023' },
+    //  {uqIdClassPk:  '2302',    classNo:  '2',    yearNo: '2023'},
     { uqIdClassPk: '2303', classNo: '3', yearNo: '2023' },
-    { uqIdClassPk: '2304', classNo: '4', yearNo: '2023' },
+    //  {uqIdClassPk:  '2304',    classNo:  '4',    yearNo: '2023'},
     { uqIdClassPk: '2305', classNo: '5', yearNo: '2023' }
 ];
 let smStudents = [
@@ -330,7 +330,7 @@ async function showStudentFunc() {
 }
 ;
 async function addStudentFunc() {
-    inquirer.prompt([
+    await inquirer.prompt([
         {
             type: 'input',
             name: 'studentName',
@@ -338,15 +338,17 @@ async function addStudentFunc() {
         },
         {
             type: 'list',
-            name: 'studentClass',
-            message: 'Select the class',
-            choices: smClasses.map((chose) => chose.classNo)
-        },
-        {
-            type: 'list',
             name: 'studentYear',
             message: 'Select the year',
             choices: [...new Set(smClasses.map((chose) => chose.yearNo))]
+        },
+        {
+            type: 'list',
+            name: 'studentClass',
+            message: 'Select the class',
+            choices: (getAns) => {
+                return smClasses.filter((choice) => choice.yearNo == getAns.studentYear).map((choice) => choice.classNo);
+            }
         },
         {
             type: 'confirm',
@@ -369,54 +371,107 @@ async function addStudentFunc() {
 }
 ;
 async function removeStudentFunc() {
+    if (smStudents.length > 0) {
+        await inquirer.prompt([
+            {
+                type: 'list',
+                name: 'classYear',
+                message: 'Select the class year',
+                choices: [...new Set(smClasses.map((choice) => choice.yearNo))]
+            },
+            {
+                type: 'list',
+                name: 'classNo',
+                message: 'Select the class number',
+                choices: (getAns) => {
+                    return smClasses.filter((choice) => choice.yearNo == getAns.classYear).map((choice) => choice.classNo);
+                }
+            },
+            {
+                type: 'list',
+                name: 'studentList',
+                message: 'Select the student',
+                choices: (getAns) => {
+                    let classID = makeClassId(getAns.classNo, getAns.classYear);
+                    return smStudents.filter((choice) => choice.uqIdClassFk == classID).map((choice) => choice.name);
+                }
+            },
+            {
+                type: 'confirm',
+                name: 'confirm',
+                message: 'Are you sure that you want to remove student?'
+            }
+        ]).then((selected) => {
+            if (selected.confirm == true) {
+                let removeClassNo = smClasses.findIndex((val) => val.classNo == selected.classNo && val.yearNo == selected.classYear);
+                smClasses.splice(removeClassNo, 1);
+                console.log(chalk.bgGreenBright('\nStudent is removed.\n'));
+            }
+            else {
+                console.log(chalk.bgRedBright('\nYou have cancelled the confirmation.\n'));
+            }
+        });
+    }
+    else {
+        console.log(chalk.bgRedBright('\nYou have no student to remove.\n'));
+    }
+    await showStudentMenuFunc();
+}
+;
+async function modifyStudentFunc() {
     await inquirer.prompt([
         {
-            type: 'list',
-            name: 'classYear',
-            message: 'Select the class year',
-            choices: [...new Set(smClasses.map((choice) => choice.yearNo))]
-        },
-        {
-            type: 'list',
-            name: 'classNo',
-            message: 'Select the class number',
-            choices: (getAns) => {
-                return smClasses.filter((choice) => choice.yearNo == getAns.classYear).map((choice) => choice.classNo);
-            }
-        },
-        {
-            type: 'list',
-            name: 'studentList',
-            message: (getAns) => 'Select the student' + makeClassId(getAns.classNo, getAns.classYear),
-            choices: (getAns) => {
-                let classID = makeClassId(getAns.classNo, getAns.classYear);
-                return smStudents.filter((choice) => choice.uqIdClassFk == classID).map((choice) => choice.name);
+            type: 'input',
+            name: 'studentRollNo',
+            message: 'Enter the student roll number',
+            validate(value) {
+                const student = smStudents.find((val) => val.uqIdStudentPk == value);
+                if (student || value == ('back')) {
+                    return true;
+                }
+                else {
+                    return (chalk.bgRedBright('Student roll number not exist or Type **back** to return to previous menu.'));
+                }
             }
         },
         {
             type: 'confirm',
-            name: 'confirm',
-            message: 'Are you sure that you want to remove student?'
+            name: 'studentConfirm',
+            message(value) {
+                const student = smStudents.filter((val) => val.uqIdStudentPk == value.studentRollNo).map((val) => val.name);
+                return ('Do you want to modify this student. ' + chalk.bgBlackBright(student));
+            },
+            when(oa) {
+                return oa.studentRollNo != 'back';
+            }
+        },
+        {
+            type: 'input',
+            name: 'studentNewName',
+            message: 'Enter the student new name',
+            validate(value) {
+                if (value.length < 1) {
+                    return chalk.bgRedBright('Must enter some character/s');
+                }
+                else {
+                    return true;
+                }
+            }
         }
     ]).then((selected) => {
-        if (selected.confirm == true) {
-            let removeClassNo = smClasses.findIndex((val) => val.classNo == selected.classNo && val.yearNo == selected.classYear);
-            smClasses.splice(removeClassNo, 1);
-            console.log(chalk.bgGreenBright('\nClass is removed.\n'));
-        }
-        else {
-            console.log(chalk.bgRedBright('\nYou have cancelled the confirmation.\n'));
+        if (selected.studentConfirm == true) {
+            const smsIndex = smStudents.findIndex((val) => val.uqIdStudentPk == selected.studentRollNo);
+            smStudents[smsIndex].name = selected.studentNewName;
+            console.log(smStudents[smsIndex]);
+            console.log(chalk.bgGreenBright('\nNew student is modified succesffully.\n'));
         }
     });
     await showStudentMenuFunc();
 }
 ;
-async function modifyStudentFunc() {
-}
-;
 //------------------------------------------------------------------------------
 //MAIN HERE
 //------------------------------------------------------------------------------
-//let appName:string = "Student Management System";
-//await welcomeFunc(appName);y
+let appName = "Student Management System";
+await welcomeFunc(appName);
 await mainMenuFunc();
